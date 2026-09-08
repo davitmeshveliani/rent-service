@@ -1,0 +1,1884 @@
+openapi: 3.0.3
+info:
+  title: Rentify API
+  version: 1.0.0
+  description: Real Estate Listing and Booking Platform API
+paths:
+  /api/listings/:
+    get:
+      operationId: listings_list
+      description: Public endpoint to list active apartments with filtering, search,
+        and ordering.
+      summary: List active apartments
+      parameters:
+      - in: query
+        name: city
+        schema:
+          type: string
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: max_rooms
+        schema:
+          type: integer
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - in: query
+        name: min_rooms
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: property_type
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - listings
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedApartmentList'
+          description: ''
+    post:
+      operationId: listings_create
+      description: Authenticated hosts can create new property listings.
+      summary: Create a new apartment listing
+      tags:
+      - listings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApartmentCreateUpdateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Apartment'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Validation Error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Forbidden - Only Hosts can create listings
+  /api/listings/{id}/:
+    get:
+      operationId: listings_retrieve
+      description: Retrieves detailed information about a specific apartment and increments
+        its view count.
+      summary: Retrieve an apartment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - listings
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Apartment'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Apartment not found
+    put:
+      operationId: listings_update
+      summary: Update an apartment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - listings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApartmentCreateUpdateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Apartment'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Validation Error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Not the owner of this apartment
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Apartment not found
+    patch:
+      operationId: listings_partial_update
+      summary: Partial update an apartment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - listings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedApartmentCreateUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Apartment'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Validation Error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Not the owner of this apartment
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Apartment not found
+    delete:
+      operationId: listings_delete
+      summary: Delete an apartment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - listings
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Listing deleted successfully
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Not the owner of this apartment
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Apartment not found
+  /api/listings/history/:
+    get:
+      operationId: listings_history_list
+      description: Retrieves the last 20 viewed apartments for the authenticated user.
+      summary: Get user's view history
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - listings
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedListingViewHistoryList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsErrorResponse'
+          description: Authentication required
+  /api/listings/images/{id}/:
+    delete:
+      operationId: listings_images_destroy
+      summary: Delete apartment image
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - listings
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: Image deleted successfully
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageErrorResponse'
+          description: Forbidden - Image does not belong to your listing
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageErrorResponse'
+          description: Image not found
+  /api/listings/images/upload/:
+    post:
+      operationId: listings_images_upload_create
+      description: Allows hosts to upload images for an apartment they own.
+      summary: Upload image for apartment
+      tags:
+      - listings
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApartmentImageUploadRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApartmentImage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageErrorResponse'
+          description: Invalid image or missing apartment ID
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageErrorResponse'
+          description: You do not own this apartment
+  /api/listings/my/:
+    get:
+      operationId: listings_my_list
+      summary: List host's own listings
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - listings
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedApartmentList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingErrorResponse'
+          description: Forbidden - Host access required
+  /api/listings/popular-searches/:
+    get:
+      operationId: listings_popular_searches
+      summary: Fetch top 10 popular searches
+      tags:
+      - listings
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PopularSearch'
+          description: ''
+  /api/reservations/:
+    get:
+      operationId: reservations_list
+      description: Retrieves all reservations where the authenticated user is either
+        the guest or the host.
+      summary: List user-related reservations
+      parameters:
+      - in: query
+        name: listing
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - CANCELLED
+          - CONFIRMED
+          - PENDING
+        description: |-
+          * `PENDING` - Pending
+          * `CONFIRMED` - Confirmed
+          * `CANCELLED` - Cancelled
+      tags:
+      - reservations
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReservationList'
+          description: ''
+    post:
+      operationId: reservations_create
+      description: Guest creates a booking request for a listing.
+      summary: Create a new reservation
+      tags:
+      - reservations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+  /api/reservations/{id}/:
+    get:
+      operationId: reservations_retrieve
+      summary: Retrieve a reservation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+    put:
+      operationId: reservations_update
+      summary: Update a reservation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+    patch:
+      operationId: reservations_partial_update
+      summary: Partial update a reservation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReservationUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+    delete:
+      operationId: reservations_destroy
+      summary: Delete a reservation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reservations/{id}/cancel/:
+    post:
+      operationId: reservations_cancel_create
+      summary: Cancel a reservation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reservations
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Reservation has been successfully cancelled.
+        '403':
+          description: You do not have permission to cancel this reservation.
+  /api/reservations/host/:
+    get:
+      operationId: reservations_host_list
+      description: Retrieves all booking requests for listings owned by the authenticated
+        host.
+      summary: List host's incoming reservation requests
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - CANCELLED
+          - CONFIRMED
+          - PENDING
+        description: |-
+          * `PENDING` - Pending
+          * `CONFIRMED` - Confirmed
+          * `CANCELLED` - Cancelled
+      tags:
+      - reservations
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReservationList'
+          description: ''
+  /api/reservations/my/:
+    get:
+      operationId: reservations_my_list
+      description: Retrieves all reservations booked by the authenticated guest user.
+      summary: List guest's own reservations
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - CANCELLED
+          - CONFIRMED
+          - PENDING
+        description: |-
+          * `PENDING` - Pending
+          * `CONFIRMED` - Confirmed
+          * `CANCELLED` - Cancelled
+      tags:
+      - reservations
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReservationList'
+          description: ''
+  /api/reviews/:
+    get:
+      operationId: reviews_list
+      description: Public endpoint to list reviews. Can be filtered by rating or listing
+        ID.
+      summary: List or filter reviews
+      parameters:
+      - in: query
+        name: listing
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: rating
+        schema:
+          type: integer
+      tags:
+      - reviews
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReviewList'
+          description: ''
+    post:
+      operationId: reviews_create
+      description: Requires authentication. User is automatically set from token.
+      summary: Create a new review
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+  /api/reviews/{id}/:
+    get:
+      operationId: reviews_retrieve
+      summary: Retrieve review details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reviews
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    put:
+      operationId: reviews_update
+      summary: Update a review
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    patch:
+      operationId: reviews_partial_update
+      summary: Partially update a review
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReviewRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    delete:
+      operationId: reviews_destroy
+      summary: Delete a review
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - reviews
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reviews/my/:
+    get:
+      operationId: reviews_my_list
+      description: Retrieve all reviews created by the currently logged-in user.
+      summary: Get authenticated user's reviews
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - reviews
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReviewList'
+          description: ''
+  /api/users/admin/users/:
+    get:
+      operationId: users_admin_users_list
+      description: API endpoint for admins to list all registered users.
+      summary: List all users (Admin)
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserProfileList'
+          description: ''
+  /api/users/admin/users/{id}/activate/:
+    post:
+      operationId: users_admin_activate
+      description: API endpoint for admins to activate a user.
+      summary: Activate a user
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: User activated successfully.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Forbidden - Admin only
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: User not found
+  /api/users/admin/users/{id}/deactivate/:
+    post:
+      operationId: users_admin_deactivate
+      description: API endpoint for admins to deactivate a user.
+      summary: Deactivate a user
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: User deactivated successfully.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Forbidden - Admin only
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: User not found
+  /api/users/change-password/:
+    post:
+      operationId: users_change_password
+      description: API endpoint to update user password.
+      summary: Change user password
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Password updated successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Validation Error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Unauthorized
+  /api/users/login/:
+    post:
+      operationId: users_login_create
+      description: Extends SimpleJWT's TokenObtainPairView to set access and refresh
+        tokens as HttpOnly cookies.
+      summary: User Login
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          description: Successfully authenticated via HttpOnly cookies.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Invalid credentials
+  /api/users/logout/:
+    post:
+      operationId: users_logout_create
+      description: |-
+        API endpoint to log out users by blacklisting the refresh token
+        and deleting authentication cookies.
+      summary: Logout user
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully logged out.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Invalid refresh token
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Unauthorized
+  /api/users/profile/:
+    get:
+      operationId: users_profile_retrieve
+      description: API endpoint to retrieve and update authenticated user's profile.
+      summary: Retrieve user profile
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    put:
+      operationId: users_profile_update
+      description: API endpoint to retrieve and update authenticated user's profile.
+      summary: Update user profile
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    patch:
+      operationId: users_profile_partial_update
+      description: API endpoint to retrieve and update authenticated user's profile.
+      summary: Partial update user profile
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+  /api/users/register/:
+    post:
+      operationId: users_register_create
+      description: API endpoint for registering a new user.
+      summary: Register a new user
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Validation Error
+  /api/users/token/refresh/:
+    post:
+      operationId: users_token_refresh_create
+      description: Extends SimpleJWT's TokenRefreshView to update access token in
+        HttpOnly cookie.
+      summary: Refresh Access Token
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          description: Access token successfully refreshed in cookie.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserErrorResponse'
+          description: Invalid or expired refresh token
+components:
+  schemas:
+    Apartment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        address_city:
+          type: string
+          maxLength: 100
+        rooms:
+          type: integer
+          maximum: 50
+          minimum: 1
+        property_type:
+          $ref: '#/components/schemas/PropertyTypeEnum'
+        is_active:
+          type: boolean
+        views_count:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApartmentImage'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - address_city
+      - created_at
+      - id
+      - images
+      - price
+      - title
+      - user
+      - views_count
+    ApartmentCreateUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        address_city:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rooms:
+          type: integer
+          maximum: 50
+          minimum: 1
+        property_type:
+          $ref: '#/components/schemas/PropertyTypeEnum'
+        is_active:
+          type: boolean
+      required:
+      - address_city
+      - price
+      - title
+    ApartmentImage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        image:
+          type: string
+          format: uri
+        is_main:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - image
+    ApartmentImageUploadRequest:
+      type: object
+      properties:
+        apartment:
+          type: string
+          format: uuid
+        image:
+          type: string
+          format: binary
+        is_main:
+          type: boolean
+      required:
+      - apartment
+      - image
+    ChangePasswordRequest:
+      type: object
+      description: Serializer for changing the authenticated user's password.
+      properties:
+        old_password:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          minLength: 1
+      required:
+      - new_password
+      - old_password
+    GenderEnum:
+      enum:
+      - MALE
+      - FEMALE
+      - OTHER
+      type: string
+      description: |-
+        * `MALE` - Male
+        * `FEMALE` - Female
+        * `OTHER` - Other
+    ImageErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          default: Error detail message.
+    ListingErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          default: Error detail message.
+    ListingViewHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        apartment:
+          allOf:
+          - $ref: '#/components/schemas/Apartment'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - apartment
+      - created_at
+      - id
+    LogoutRequest:
+      type: object
+      description: Serializer for validating and blacklisting refresh tokens during
+        logout.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    MetricsErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          default: Error detail message.
+    PaginatedApartmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Apartment'
+    PaginatedListingViewHistoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListingViewHistory'
+    PaginatedReservationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+    PaginatedReviewList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+    PaginatedUserProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserProfile'
+    PatchedApartmentCreateUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        address_city:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rooms:
+          type: integer
+          maximum: 50
+          minimum: 1
+        property_type:
+          $ref: '#/components/schemas/PropertyTypeEnum'
+        is_active:
+          type: boolean
+    PatchedReservationUpdateRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+    PatchedReviewRequest:
+      type: object
+      description: |-
+        Serializer for creating and retrieving reviews.
+        Ensures that only users with confirmed reservations can leave a review.
+      properties:
+        listing:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          nullable: true
+    PatchedUserProfileRequest:
+      type: object
+      description: Serializer for retrieving and updating user profile details.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        first_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        last_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        birthday:
+          type: string
+          format: date
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        bio:
+          type: string
+          nullable: true
+    PopularSearch:
+      type: object
+      properties:
+        query:
+          type: string
+        count:
+          type: integer
+      required:
+      - count
+      - query
+    PropertyTypeEnum:
+      enum:
+      - apartment
+      - house
+      - studio
+      - villa
+      type: string
+      description: |-
+        * `apartment` - Apartment
+        * `house` - House
+        * `studio` - Studio
+        * `villa` - Villa
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        listing:
+          type: string
+          format: uuid
+        listing_title:
+          type: string
+          readOnly: true
+        user:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_date
+      - id
+      - listing
+      - listing_title
+      - start_date
+      - status
+      - user
+    ReservationRequest:
+      type: object
+      properties:
+        listing:
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+      required:
+      - end_date
+      - listing
+      - start_date
+    ReservationUpdateRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+    Review:
+      type: object
+      description: |-
+        Serializer for creating and retrieving reviews.
+        Ensures that only users with confirmed reservations can leave a review.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        listing:
+          type: string
+          format: uuid
+        user:
+          type: string
+          readOnly: true
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - listing
+      - rating
+      - user
+    ReviewRequest:
+      type: object
+      description: |-
+        Serializer for creating and retrieving reviews.
+        Ensures that only users with confirmed reservations can leave a review.
+      properties:
+        listing:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          nullable: true
+      required:
+      - listing
+      - rating
+    RoleEnum:
+      enum:
+      - HOST
+      - GUEST
+      - BOTH
+      type: string
+      description: |-
+        * `HOST` - Host
+        * `GUEST` - Guest
+        * `BOTH` - Both
+    StatusEnum:
+      enum:
+      - PENDING
+      - CONFIRMED
+      - CANCELLED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `CONFIRMED` - Confirmed
+        * `CANCELLED` - Cancelled
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    UserErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Detailed error description.
+      required:
+      - detail
+    UserProfile:
+      type: object
+      description: Serializer for retrieving and updating user profile details.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        email:
+          type: string
+          format: email
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        first_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        last_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        birthday:
+          type: string
+          format: date
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        bio:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+          readOnly: true
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+      required:
+      - email
+      - id
+      - is_active
+      - role
+      - username
+    UserProfileRequest:
+      type: object
+      description: Serializer for retrieving and updating user profile details.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        first_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        last_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        birthday:
+          type: string
+          format: date
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        bio:
+          type: string
+          nullable: true
+      required:
+      - email
+    UserRegistrationRequest:
+      type: object
+      description: |-
+        Serializer for handling user registration.
+        Validates email uniqueness, username availability, and enforces password complexity rules.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        first_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        last_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        birthday:
+          type: string
+          format: date
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          maxLength: 255
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        bio:
+          type: string
+          nullable: true
+      required:
+      - email
+      - password
+      - username
+  securitySchemes:
+    cookieAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: HttpOnly JWT access token cookie (or standard Bearer token).

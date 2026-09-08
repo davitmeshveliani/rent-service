@@ -1,0 +1,115 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: rentify_db
+    restart: always
+
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-rentify_db}
+      MYSQL_USER: ${MYSQL_USER:-rentify_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-rentify_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    ports:
+      - "3307:3306"
+
+  web:
+    build: .
+    container_name: rentify_web
+    restart: always
+
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+
+    env_file:
+      - .env
+
+    expose:
+      - "8000"
+
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:alpine
+    container_name: rentify_nginx
+    restart: always
+
+    ports:
+      - "8081:80"
+
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/static
+      - media_volume:/app/media
+
+    depends_on:
+      - web
+
+volumes:
+  mysql_data:
+  static_volume:
+  media_volume:
+
+
+
+# ============================================================
+# PRODUCTION — FOR AWS
+# ============================================================
+#
+# Production-ში web service-ის command-ში
+# runserver-ის ნაცვლად ვიყენებთ Gunicorn-ს.
+#
+# არსებული DEVELOPMENT command:
+#
+# command: >
+#   sh -c "python manage.py migrate &&
+#          python manage.py collectstatic --noinput &&
+#          python manage.py runserver 0.0.0.0:8000"
+#
+# Production-ისთვის:
+#
+# command: >
+#   sh -c "python manage.py migrate &&
+#          python manage.py collectstatic --noinput &&
+#          gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+#
+# ============================================================
+# PRODUCTION NOTES
+# ============================================================
+#
+# 1. Django runserver გამოიყენება მხოლოდ DEVELOPMENT-ში.
+#
+# 2. Production-ში ვიყენებთ Gunicorn-ს.
+#
+# 3. Nginx რჩება წინ:
+#
+#    Internet → Nginx → Gunicorn → Django
+#
+# 4. Production-ზე DEBUG=False უნდა იყოს.
+#
+# 5. Production-ის SECRET_KEY და database credentials
+#    უნდა ინახებოდეს .env-ში / AWS Secrets-ში.
+#
+# 6. Production-ზე MySQL შეიძლება გადავიდეს
+#    AWS RDS-ზე, ნაცვლად Docker MySQL container-ისა.
+#
+# 7. ports:
+#      "3307:3306"
+#    Production-ზე MySQL-ის პორტი გარედან არ უნდა იყოს
+#    ღია. Database უნდა იყოს მხოლოდ შიდა ქსელში.
+#
+# 8. Nginx-ის 8081 პორტი Production-ზე შეიძლება შეიცვალოს
+#    80/443-ზე HTTPS-ისთვის.
+#
+# ============================================================
