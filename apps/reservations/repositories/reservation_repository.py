@@ -18,6 +18,7 @@ class ReservationRepository:
 
     def update_status(self,reservation: Reservation,status_value: str,) -> Reservation:
         reservation.status = status_value
+        reservation.full_clean()
         reservation.save(update_fields=["status"])
         return reservation
 

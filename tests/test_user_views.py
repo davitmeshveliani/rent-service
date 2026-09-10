@@ -27,7 +27,9 @@ class UserAPITests(APITestCase):
                 "password": "newpassword123",
                 "email": "new@example.com",}
 
+
         response = self.client.post(self.register_url,data,format="json",)
+
 
         self.assertEqual(response.status_code,status.HTTP_201_CREATED,)
 
@@ -90,6 +92,7 @@ class UserAPITests(APITestCase):
         data = {
             "old_password": "wrongpassword123",
             "new_password": "newsecurepassword123",}
+
 
         response = self.client.post(self.change_password_url,data,format="json",)
 

@@ -4,11 +4,10 @@ API controllers for listing metrics and user history.
 
 from django.db.models import Count, QuerySet
 from drf_spectacular.utils import (
-    OpenApiResponse,
-    extend_schema,
-    extend_schema_view,
-    inline_serializer,
-)
+                                OpenApiResponse,
+                                extend_schema,
+                                extend_schema_view,
+                                inline_serializer,)
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -42,12 +41,13 @@ class UserViewHistoryController(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self) -> QuerySet[ListingViewHistory]:
-        if getattr(self,"swagger_fake_view",False,):
+        if getattr(self, "swagger_fake_view", False):
             return ListingViewHistory.objects.none()
 
-        return (ListingViewHistory.objects.filter(user=self.request.user).select_related
-                                ("apartment","apartment__user",).prefetch_related
-                                ("apartment__images",).order_by("-created_at")[:20])
+        return (ListingViewHistory.objects.filter
+                                    (user=self.request.user).select_related
+                                    ("listing", "listing__user").prefetch_related
+                                    ("listing__images").order_by("-created_at")[:20])
 
 
 @extend_schema_view(

@@ -112,7 +112,7 @@ class ListingDetailController(generics.RetrieveUpdateDestroyAPIView):
         listing = self.service.get_listing(
             listing_id=listing_id,
             user=(self.request.user
-                            if self.request.user.is_authenticated else None),)
+                    if self.request.user.is_authenticated else None),)
 
         if listing is None:
             raise Http404("Apartment not found.")
@@ -120,20 +120,20 @@ class ListingDetailController(generics.RetrieveUpdateDestroyAPIView):
 
         return listing
 
-    def retrieve(self,request: Request,*args: Any,**kwargs: Any,) -> Response:
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Return the listing and update its view statistics."""
         listing = self.get_object()
-        ListingViewHistory.objects.create(
-            user=(request.user if request.user.is_authenticated else None),
-                        apartment=listing,)
 
-        Apartment.objects.filter(
-            pk=listing.pk).update(views_count=F("views_count") + 1)
+        if not request.user.is_authenticated or listing.user_id != request.user.id:
+            ListingViewHistory.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                                    listing=listing,)
+
+        Apartment.objects.filter(pk=listing.pk).update(iews_count=F("views_count") + 1)
 
         listing.refresh_from_db(fields=["views_count"])
         serializer = self.get_serializer(listing)
         return Response(serializer.data)
-
 
 
     def destroy(self,request: Request,*args: Any,**kwargs: Any,) -> Response:

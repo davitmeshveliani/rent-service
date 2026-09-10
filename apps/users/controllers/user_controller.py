@@ -20,7 +20,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-
+from drf_spectacular.utils import extend_schema_view
 from apps.users.schema.user_schema import (
                                             registration_schema,
                                             login_schema,
@@ -186,7 +186,7 @@ class UserProfileController(RetrieveUpdateAPIView):
 
 # 6. CHANGE PASSWORD
 
-@change_password_schema
+@extend_schema_view(post=change_password_schema)
 class ChangePasswordController(generics.GenericAPIView):
     """API endpoint to update user password."""
 

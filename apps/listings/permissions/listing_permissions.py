@@ -25,16 +25,11 @@ class IsHostUser(permissions.BasePermission):
     Permission allowing authenticated HOST and BOTH users.
     """
 
-    def has_permission(
-        self,
-        request: Request,
-        view: APIView,
-    ) -> bool:
+    def has_permission(self,request: Request,view: APIView,) -> bool:
         user = request.user
 
         if not user.is_authenticated:
             return False
 
         return user.groups.filter(
-            name__in=["HOST", "BOTH"]
-        ).exists()
+            name__in=["HOST", "BOTH"]).exists()

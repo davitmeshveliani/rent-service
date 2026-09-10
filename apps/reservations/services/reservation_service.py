@@ -62,7 +62,7 @@ class ReservationService:
             if current_status not in {
                 Reservation.StatusChoice.PENDING,Reservation.StatusChoice.CONFIRMED,}:
                 return False
-            if reservation.start_date <= timezone.now().date():
+            if reservation.start_date <= timezone.now():
                 return False
         else:
             return False

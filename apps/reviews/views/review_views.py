@@ -1,6 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions
-
+from drf_spectacular.utils import extend_schema_view
 from apps.reviews.models import Review
 from apps.reviews.schemas.review_schema import (
                                                 my_reviews_schema,
@@ -31,7 +31,7 @@ class ReviewListCreateAPIView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
-@my_reviews_schema
+@extend_schema_view(get=my_reviews_schema)
 class MyReviewsAPIView(generics.ListAPIView):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]

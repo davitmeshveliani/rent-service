@@ -5,7 +5,7 @@ from pathlib import Path
 from environ import Env
 from datetime import timedelta
 
-from rest_framework import authentication
+from apps import users
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
