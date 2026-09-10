@@ -1,45 +1,33 @@
-"""
-Create Django groups and migrate existing user roles to groups.
-"""
-
-from django.contrib.auth.models import Group
-from django.core.management.base import BaseCommand
-
-from apps.users.models import User
+from rest_framework.permissions import BasePermission
 
 
-class Command(BaseCommand):
-    """Create user groups and assign users based on their current role."""
+class IsHostUser(BasePermission):
+    """
+    Allows access only to authenticated users
+    who belong to the HOST or BOTH group.
+    """
 
-    GROUPS = ("GUEST", "HOST", "BOTH")
+    message = "Only host users are allowed to perform this action."
 
-    def handle(self, *args, **options):
-        """Create groups and migrate existing user roles."""
+    def has_permission(self, request, view):
+        user = request.user
 
-        groups = {}
-        for group_name in self.GROUPS:
-            group, created = Group.objects.get_or_create(
-                name=group_name)
-            groups[group_name] = group
+        if not user or not user.is_authenticated:
+            return False
 
-            if created:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Created group: {group_name}"))
-            else:
-                self.stdout.write(f"Group already exists: {group_name}")
-        users_updated = 0
-        for user in User.objects.all():
-            role = user.role
+        return user.groups.filter(
+            name__in=["HOST", "BOTH"]
+        ).exists()
 
-            if role not in groups:
-                self.stdout.write(
-                    self.style.WARNING(
-                        f"Unknown role for {user.email}: {role}"))
-                continue
-            user.groups.set([groups[role]])
-            users_updated += 1
-        self.stdout.write(
-            self.style.SUCCESS(f"Users assigned to groups: {users_updated}"))
-        self.stdout.write(
-            self.style.SUCCESS("Django Groups setup completed successfully."))
+
+class IsOwnerOrReadOnly(BasePermission):
+    """
+    Allows read access to everyone.
+    Write access is allowed only to the owner.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return True
+
+        return obj.user == request.user

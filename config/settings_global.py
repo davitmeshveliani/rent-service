@@ -287,7 +287,7 @@ LOGGING = {
 }
 
 
-# . SPECTACULAR_SETTINGS
+# 2. SPECTACULAR_SETTINGS
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Rentify API",
@@ -295,5 +295,5 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Real Estate Listing and Booking Platform API",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
-
+    "GET_LIB_DOCSTRINGS": True,
 }

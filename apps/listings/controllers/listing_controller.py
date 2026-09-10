@@ -35,7 +35,7 @@ class ListingListCreateController(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter,]
     filterset_class = ApartmentFilter
     search_fields = ["title","description","address_city","address_district",]
-    ordering_fields = ["price","created_at","rooms","views_count",]
+    ordering_fields = ["price","created_at","rooms","views_count","average_rating",]
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

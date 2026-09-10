@@ -1,4 +1,3 @@
-from .user_serializers import (
-    UserProfileSerializer,
-    UserRegistrationSerializer,
-)
+from .user_serializers import (ChangePasswordSerializer,
+                                UserProfileSerializer,
+                                UserRegistrationSerializer,)

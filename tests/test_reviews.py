@@ -1,108 +1,162 @@
-from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.urls import reverse
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.listings.models.apartment import Apartment
-from apps.reservations.models import Reservation
-from apps.reviews.models import Review
-from apps.users.choices.choices import RoleChoices
+from apps.listings.models.apartment import (
+    Apartment,
+    PropertyTypeChoices,
+)
+
 
 User = get_user_model()
 
 
-class ReviewCRUDTests(APITestCase):
+class ListingCRUDTests(APITestCase):
 
     def setUp(self):
-        self.host = User.objects.create_user(
-                                            email="host@example.com",
-                                            username="host",
-                                            password="Password123!",
-                                            role=RoleChoices.HOST,)
+        host_group = Group.objects.create(name="HOST")
+        guest_group = Group.objects.create(name="GUEST")
 
         self.user = User.objects.create_user(
-                                                email="reviewer@example.com",
-                                                username="reviewer",
-                                                password="Password123!",
-                                                role=RoleChoices.GUEST,)
+            email="owner@example.com",
+            username="owner",
+            password="Password123!",
+        )
 
-        self.apartment = Apartment.objects.create(
-                                                title="Stuttgart Flat",
-                                                price=Decimal("120.00"),
-                                                address_city="Stuttgart",
-                                                rooms=2,
-                                                user=self.host,)
+        self.other_user = User.objects.create_user(
+            email="client@example.com",
+            username="client",
+            password="Password123!",
+        )
 
-        now = timezone.now()
+        self.user.groups.add(host_group)
+        self.other_user.groups.add(guest_group)
 
-        self.reservation = Reservation.objects.create(
-                                                user=self.user,
-                                                listing=self.apartment,
-                                                start_date=now - timedelta(days=10),
-                                                end_date=now - timedelta(days=5),
-                                                status=Reservation.StatusChoice.CONFIRMED,)
+        self.listing = Apartment.objects.create(
+                        title="Berlin Center Flat",
+                        description="Comfortable living space in Mitte",
+                        price=Decimal("100.00"),
+                        address_city="Berlin",
+                        rooms=2,
+                        property_type=PropertyTypeChoices.APARTMENT,
+                        user=self.user,)
 
-        self.review = Review.objects.create(
-                                            user=self.user,
-                                            listing=self.apartment,
-                                            rating=4,
-                                            comment="Great location and clean environment!",)
+        self.list_url = reverse("listing-list-create")
 
-        self.list_url = reverse("review-list")
-        self.detail_url = reverse("review-detail",
-                                            kwargs={"pk": self.review.pk},)
+        self.detail_url = reverse("listing-detail",kwargs={"pk": self.listing.pk},)
 
-    def test_create_review_with_valid_comment(self):
-        """A guest can create a review after completing a confirmed stay."""
-        apt2 = Apartment.objects.create(
-                                        title="Düsseldorf Apartment",
-                                        price=Decimal("150.00"),
-                                        address_city="Düsseldorf",
-                                        rooms=3,
-                                        user=self.host,)
+    def test_list_listings(self):
+        """
+        Verify that listings can be retrieved successfully.
+        """
 
-        now = timezone.now()
+        response = self.client.get(self.list_url)
 
-        Reservation.objects.create(
-                                    user=self.user,
-                                    listing=apt2,
-                                    start_date=now - timedelta(days=10),
-                                    end_date=now - timedelta(days=5),
-                                    status=Reservation.StatusChoice.CONFIRMED,)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+
+    def test_create_listing_as_host(self):
+        """
+        Verify that a HOST can create a new listing.
+        """
 
         self.client.force_authenticate(user=self.user)
 
         data = {
-                    "listing": apt2.pk,
-                    "rating": 5,
-                    "comment": "Wonderful apartment, highly recommended!",}
+                    "title": "Munich Studio",
+                    "description": "Cozy studio near Marienplatz",
+                    "price": "250.00",
+                    "address_city": "Munich",
+                    "rooms": 1,
+                    "property_type": PropertyTypeChoices.STUDIO,}
+
+        response = self.client.post(
+            self.list_url,data,format="json",)
+
+        self.assertEqual(response.status_code,status.HTTP_201_CREATED,)
+
+        self.assertEqual(Apartment.objects.filter(user=self.user).count(),2,)
+
+    def test_create_duplicate_listing(self):
+        """
+        Verify that the same listing cannot be created twice
+        by the same owner.
+        """
+
+        self.client.force_authenticate(user=self.user)
+
+        data = {
+                    "title": "Berlin Center Flat",
+                    "description": "Another description",
+                    "price": "200.00",
+                    "address_city": "Berlin",
+                    "address_district": "",
+                    "rooms": 2,
+                    "property_type": PropertyTypeChoices.APARTMENT,
+                }
 
         response = self.client.post(self.list_url,data,format="json",)
 
-        self.assertEqual(response.status_code,status.HTTP_201_CREATED,)
-        self.assertEqual(Review.objects.count(), 2)
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST,)
 
-    def test_update_review(self):
-        """A review owner can update their review."""
+        self.assertEqual(Apartment.objects.filter(user=self.user).count(),1,)
+
+    def test_update_listing_owner(self):
+        """
+        Verify that the listing owner can update their listing.
+        """
+
         self.client.force_authenticate(user=self.user)
 
-        data = {"rating": 3,"comment": "Average experience after checking again.",}
+        data = {"title": "Updated Berlin Flat",}
 
-        response = self.client.patch(self.detail_url,
-            data,format="json",)
+        response = self.client.patch(
+            self.detail_url,data,format="json",)
 
         self.assertEqual(response.status_code,status.HTTP_200_OK,)
-        self.review.refresh_from_db()
-        self.assertEqual(self.review.rating, 3)
 
-    def test_delete_review(self):
-        """A review owner can delete their review."""
+        self.listing.refresh_from_db()
+
+        self.assertEqual(
+            self.listing.title,"Updated Berlin Flat",)
+
+    def test_update_listing_forbidden_for_other(self):
+        """
+        Verify that another user cannot modify someone else's listing.
+        """
+
+        self.client.force_authenticate(user=self.other_user)
+
+        data = {"title": "Hacked Title",}
+
+        response = self.client.patch(self.detail_url,data,format="json",)
+
+        self.assertEqual(response.status_code,status.HTTP_403_FORBIDDEN,)
+
+        self.listing.refresh_from_db()
+
+        self.assertEqual(self.listing.title,"Berlin Center Flat",)
+
+    def test_delete_listing(self):
+        """
+        Verify that the owner can delete a listing through
+        the API and that the listing is soft-deleted.
+        """
+
         self.client.force_authenticate(user=self.user)
+
         response = self.client.delete(self.detail_url)
+
         self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT,)
-        self.assertEqual(Review.objects.count(), 0)
+
+        self.listing.refresh_from_db()
+
+        # The listing remains in the database but becomes inactive.
+        self.assertFalse(self.listing.is_active,)
 

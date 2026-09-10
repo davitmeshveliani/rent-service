@@ -83,8 +83,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields: ClassVar[tuple[str, ...]] = ("id","username","email","phone_number","first_name",
-                            "last_name","birthday","address","gender","role","bio","is_active",)
-        read_only_fields: ClassVar[tuple[str, ...]] = ("id","username","role","is_active",)
+                            "last_name","birthday","address","gender","bio","is_active",)
+        read_only_fields: ClassVar[tuple[str, ...]] = ("id","username","is_active",)
 
     def validate_email(self, value: str) -> str:
         """Validate that the updated email is not used by another account."""
@@ -118,9 +118,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         """Ensure that the new password differs from the old password."""
         if attrs["old_password"] == attrs["new_password"]:
             raise serializers.ValidationError(
-                    {
-                            "new_password": ("The new password cannot be the same "
-                                                "as the old password.")})
+                               {"new_password": ("The new password cannot be the same "
+                                                           "as the old password.")})
         return attrs
 
 

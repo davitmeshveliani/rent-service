@@ -28,7 +28,7 @@ services:
 
     volumes:
       - .:/app
-      - static_volume:/app/static
+      - static_volume:/app/staticfiles
       - media_volume:/app/media
 
     env_file:
@@ -50,8 +50,12 @@ services:
 
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - static_volume:/app/static
+      - static_volume:/app/staticfiles
       - media_volume:/app/media
+
+    command: >
+      sh -c "echo 'Rentify: http://localhost:8081/api/docs/' &&
+             nginx -g 'daemon off;'"
 
     depends_on:
       - web
@@ -60,7 +64,6 @@ volumes:
   mysql_data:
   static_volume:
   media_volume:
-
 
 
 # ============================================================

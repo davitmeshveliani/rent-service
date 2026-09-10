@@ -1,3 +1,3 @@
-from .choices import GenderChoices, RoleChoices
+from .choices import GenderChoices
 
-__all__ = ["GenderChoices", "RoleChoices"]
+__all__ = ["GenderChoices"]

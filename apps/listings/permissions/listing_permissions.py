@@ -3,7 +3,6 @@ Custom REST framework permissions for listing ownership and host authorization.
 """
 
 from typing import Any
-from apps.users.choices.choices import RoleChoices
 from rest_framework import permissions
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -26,9 +25,16 @@ class IsHostUser(permissions.BasePermission):
     Permission allowing authenticated HOST and BOTH users.
     """
 
-    def has_permission(self,request: Request,view: APIView,) -> bool:
+    def has_permission(
+        self,
+        request: Request,
+        view: APIView,
+    ) -> bool:
         user = request.user
 
         if not user.is_authenticated:
             return False
-        return user.role in (RoleChoices.HOST,RoleChoices.BOTH,)
+
+        return user.groups.filter(
+            name__in=["HOST", "BOTH"]
+        ).exists()

@@ -43,6 +43,21 @@ class ReservationSerializer(serializers.ModelSerializer):
         if not user or not user.is_authenticated:
             raise serializers.ValidationError({"detail": "Authentication required."})
 
+        # Reservation cannot be more than 1 year in advance
+        today = timezone.localdate()
+        max_reservation_date = today.replace(year=today.year + 1)
+
+        if start_date and start_date.date() >= max_reservation_date:
+            raise serializers.ValidationError({"start_date": (
+                        "Reservations cannot be made more than 1 year in advance.")})
+
+
+
+        # User cannot reserve their own listing
+        if listing and getattr(listing, "user", None) == user:
+            raise serializers.ValidationError(
+                {"listing": "You cannot reserve your own listing."}
+            )
         # User cannot reserve their own listing
         if listing and getattr(listing, "user", None) == user:
             raise serializers.ValidationError({"listing": "You cannot reserve your own listing."})

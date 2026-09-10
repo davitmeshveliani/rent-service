@@ -25,7 +25,7 @@ from apps.listings.models.history import (
 )
 from apps.reservations.models import Reservation
 from apps.reviews.models import Review
-from apps.users.choices.choices import GenderChoices, RoleChoices
+from apps.users.choices.choices import GenderChoices
 from apps.users.models import User
 
 
@@ -69,12 +69,6 @@ class Command(BaseCommand):
             "Hoffmann",
         ]
 
-        roles = [
-            RoleChoices.HOST,
-            RoleChoices.GUEST,
-            RoleChoices.BOTH,
-        ]
-
         genders = [
             GenderChoices.MALE,
             GenderChoices.FEMALE,
@@ -95,7 +89,6 @@ class Command(BaseCommand):
                 ),
                 bio=f"Test user {i}",
                 gender=random.choice(genders),
-                role=random.choice(roles),
                 is_active=True,
             )
 
@@ -122,10 +115,10 @@ class Command(BaseCommand):
         }
 
         for user in users:
-            group = groups.get(user.role)
-
-            if group:
-                user.groups.add(group)
+            group = random.choice(
+                list(groups.values())
+            )
+            user.groups.add(group)
 
         # --------------------------------------------------
         # APARTMENTS
@@ -145,10 +138,9 @@ class Command(BaseCommand):
         hosts = [
             user
             for user in users
-            if user.role in (
-                RoleChoices.HOST,
-                RoleChoices.BOTH,
-            )
+            if user.groups.filter(
+                name__in=["HOST", "BOTH"]
+            ).exists()
         ]
 
         apartments = []

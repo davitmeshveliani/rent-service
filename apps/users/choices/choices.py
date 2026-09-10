@@ -1,13 +1,14 @@
 """
 Choice enumerations for the Users application domain.
-Provides structured options for user gender and system roles.
+Provides structured options for user gender.
 """
 
 from django.db import models
 
+
 __all__: list[str] = [
-                "GenderChoices",
-                "RoleChoices",]
+    "GenderChoices",
+]
 
 
 class GenderChoices(models.TextChoices):
@@ -19,12 +20,3 @@ class GenderChoices(models.TextChoices):
     FEMALE = "FEMALE", "Female"
     OTHER = "OTHER", "Other"
 
-
-class RoleChoices(models.TextChoices):
-    """
-    Enumeration for user system role types.
-    """
-
-    HOST = "HOST", "Host"
-    GUEST = "GUEST", "Guest"
-    BOTH = "BOTH", "Both"
