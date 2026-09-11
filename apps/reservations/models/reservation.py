@@ -10,7 +10,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from apps.core.models import UUIDAbstractModel
 from apps.listings.models import Apartment
-
+from simple_history.models import HistoricalRecords
 
 class Reservation(UUIDAbstractModel):
     """
@@ -33,6 +33,8 @@ class Reservation(UUIDAbstractModel):
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         db_table = "reservations"

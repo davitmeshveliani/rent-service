@@ -758,3 +758,4 @@ moneyed.classes.MoneyComparisonError: Cannot compare instances of Money and Deci
 [2026-09-11 00:43:59,771] WARNING django.request Forbidden: /api/listings/2d0fc1c1-de9e-494a-bbe2-ccf30577b178/
 [2026-09-11 00:44:04,222] WARNING django.request Bad Request: /api/users/change-password/
 [2026-09-11 00:44:05,452] WARNING django.request Unauthorized: /api/users/profile/
+[2026-09-11 09:21:38,860] WARNING django.request Not Found: /favicon.ico
