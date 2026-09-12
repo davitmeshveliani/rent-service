@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
+from simple_history.models import HistoricalRecords
 from apps.core.models import UUIDAbstractModel
 from apps.listings.models import Apartment
 
@@ -25,6 +25,8 @@ class Review(UUIDAbstractModel):
     rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1),MaxValueValidator(5),])
     comment = models.TextField(blank=True,null=True,)
     created_at = models.DateTimeField(auto_now_add=True,db_index=True,)
+
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ["-created_at"]

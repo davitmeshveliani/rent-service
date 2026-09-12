@@ -6,6 +6,7 @@ Includes query optimizations (list_select_related) to prevent N+1 issues in the 
 from typing import ClassVar
 
 from django.contrib import admin
+from simple_history.admin import SimpleHistoryAdmin
 
 from apps.listings.models import (
     Apartment,
@@ -25,15 +26,17 @@ class ApartmentImageInline(admin.TabularInline):
 
 
 @admin.register(Apartment)
-class ApartmentAdmin(admin.ModelAdmin):
+class ApartmentAdmin(SimpleHistoryAdmin):
     """
     Admin configuration for managing Apartment listings.
     """
 
     list_select_related = ("user",)
-    list_display = ("title","address_city","price","rooms","property_type","is_active",
-                                        "views_count","user","created_at",)
-    list_filter = ("is_active","property_type","address_city","created_at",)
+    list_display = ("title","address_city",
+                                    "price","rooms","property_type",
+                                    "is_active","views_count","user","created_at",)
+
+    list_filter = ("is_active", "property_type", "address_city", "created_at")
     search_fields = ("title","description","address_city","user__username","user__email",)
     ordering = ("-created_at",)
     readonly_fields = ("views_count", "created_at")

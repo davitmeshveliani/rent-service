@@ -12,7 +12,7 @@ from django.db import models
 from django.utils import timezone
 
 from apps.users.choices.choices import GenderChoices
-
+from simple_history.models import HistoricalRecords
 
 class User(AbstractUser):
     """
@@ -33,6 +33,9 @@ class User(AbstractUser):
     gender = models.CharField(max_length=10,choices=GenderChoices.choices,default=GenderChoices.MALE,)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username","first_name","last_name",]
+
+    history = HistoricalRecords()
+
 
     class Meta:
         db_table = "users"
