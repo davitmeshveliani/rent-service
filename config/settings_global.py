@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "rest_framework_simplejwt",
      "djmoney",
+    "drf_standardized_errors" ,
     "simple_history",
     "rest_framework_simplejwt.token_blacklist",
 
@@ -171,11 +172,24 @@ REST_FRAMEWORK = {
        # 'rest_framework.throttling.AnonRateThrottle',
        #   'rest_framework.throttling.UserRateThrottle',
     ],
+
+        'EXCEPTION_HANDLER': 'drf_standardized_errors.handler.exception_handler',
+
+
+
+
      'DEFAULT_THROTTLE_RATES': {
          'anon': '2/day',
          'user': '7/day',
     },
 }
+
+
+
+DRF_STANDARDIZED_ERRORS = {
+    "ENABLE_IN_DEBUG_FOR_UNHANDLED_EXCEPTIONS": True,
+}
+
 
 # SimpleJWT
 SIMPLE_JWT = {
