@@ -451,7 +451,7 @@ class Command(BaseCommand):
             view_histories.append(
                 ListingViewHistory(
                     user=random.choice(users),
-                    apartment=random.choice(apartments),
+                    listing=random.choice(apartments),
                 )
             )
 
