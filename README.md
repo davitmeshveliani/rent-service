@@ -394,7 +394,8 @@ The main Django applications are organized by responsibility:
 - `reservations` — booking and reservation logic
 - `reviews` — reviews and rating-related functionality
 
-The project also contains Docker, Nginx, database and configuration files required for local development and deployment.
+The project also contains Docker, Nginx, database and configuration files
+            required for local development and deployment.
 
 
 # Project Status / Статус проекта
