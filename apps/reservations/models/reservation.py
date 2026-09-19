@@ -11,13 +11,14 @@ from dateutil.relativedelta import relativedelta
 from apps.core.models import UUIDAbstractModel
 from apps.listings.models import Apartment
 from simple_history.models import HistoricalRecords
+from apps.core.managers import ReservationManager
 
 class Reservation(UUIDAbstractModel):
     """
     Model representing an apartment booking/reservation.
     """
 
-    objects = models.Manager()
+    objects = ReservationManager()
 
     class StatusChoice(models.TextChoices):
         PENDING = "PENDING", "Pending"

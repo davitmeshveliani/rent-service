@@ -6,12 +6,14 @@ and profile management.
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
 from rest_framework import generics, status
 from rest_framework.generics import (
-    CreateAPIView,
-    RetrieveUpdateAPIView,
-)
+                    CreateAPIView,
+                    RetrieveUpdateAPIView,
+                )
+from django.conf import settings
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -29,7 +31,7 @@ from apps.users.schema.user_schema import (
                                             profile_schema,
                                             change_password_schema,)
 
-from apps.users.serializers.user_serializers import (
+from apps.users.serializers.user_serializers import (BecomeHostSerializer,
                                                     ChangePasswordSerializer,
                                                     LogoutSerializer,
                                                     UserProfileSerializer,
@@ -83,10 +85,10 @@ class CookieTokenObtainPairController(TokenObtainPairView):
 
             if access_token:
                 response.set_cookie(key="access_token",value=access_token,
-                                httponly=True,secure=False,samesite="Lax",)
+                                httponly=True,secure=not settings.DEBUG,samesite="Lax",)
             if refresh_token:
                 response.set_cookie(key="refresh_token",value=refresh_token,
-                                    httponly=True,secure=False,samesite="Lax",)
+                                    httponly=True,secure=not settings.DEBUG,samesite="Lax",)
             response.data = {"detail": "Login successful."}
         return response
 
@@ -127,7 +129,7 @@ class CookieTokenRefreshController(TokenRefreshView):
 
         if access_token:
             response.set_cookie(key="access_token",value=access_token,
-                                httponly=True,secure=False,samesite="Lax",)
+                                httponly=True,secure=not settings.DEBUG,samesite="Lax",)
 
         response.data = {
             "detail": "Token refreshed successfully."}
@@ -210,3 +212,35 @@ class ChangePasswordController(generics.GenericAPIView):
                     {"detail": (
                             "Password updated successfully.")},
                     status=status.HTTP_200_OK,)
+
+# 7. BECOME HOST
+
+class BecomeHostController(generics.GenericAPIView):
+    """
+    API endpoint allowing an authenticated user to change
+    their role to HOST or BOTH.
+    """
+
+    permission_classes = (IsAuthenticated,)
+    serializer_class = BecomeHostSerializer
+
+    def post(self,request: Request,*args: Any,**kwargs: Any,) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        selected_role = serializer.validated_data["role"]
+        user = request.user
+
+        # Remove the current role group.
+
+        user.groups.filter(name__in=["GUEST", "HOST", "BOTH"]).delete()
+
+        # Add the selected role group.
+
+        selected_group, _ = Group.objects.get_or_create(name=selected_role)
+        user.groups.add(selected_group)
+
+        return Response(
+            {"detail": (
+                    f"Role changed to {selected_role} successfully."),"role": selected_role,},
+            status=status.HTTP_200_OK,)

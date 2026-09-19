@@ -143,3 +143,22 @@ class ListingCRUDTests(APITestCase):
             """
 
             self.assertEqual(self.listing.average_rating,Decimal("0"),)
+
+    def test_listing_detail_retrieve(self):
+        """
+        Verify that a listing detail can be retrieved successfully
+        and that the views counter is incremented.
+        """
+
+        self.assertEqual(self.listing.views_count, 0)
+
+        response = self.client.get(self.detail_url)
+
+        self.assertEqual(response.status_code,status.HTTP_200_OK,)
+        self.assertEqual(response.data["id"],str(self.listing.pk),)
+        self.assertEqual(response.data["title"],"Berlin Center Flat",)
+
+        self.listing.refresh_from_db()
+
+        self.assertEqual(
+            self.listing.views_count,1,)

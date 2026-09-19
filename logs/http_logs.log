@@ -1,0 +1,142 @@
+[2026-09-19 15:17:50,400] WARNING django.request Not Found: /api/reservations/20ed152a-7539-4094-9ead-9cbbf225e813/
+[2026-09-19 15:17:52,615] WARNING django.request Bad Request: /api/reservations/
+[2026-09-19 18:45:27,226] WARNING django.request Bad Request: /api/reservations/
+[2026-09-19 18:45:28,728] WARNING django.request Not Found: /api/reservations/51475563-e9b3-40e9-a97e-3e094fc270ce/
+[2026-09-19 18:45:30,242] WARNING django.request Bad Request: /api/reservations/
+[2026-09-19 18:46:16,790] WARNING django.request Unauthorized: /api/users/profile/
+[2026-09-19 18:46:17,299] WARNING django.request Unauthorized: /api/users/profile/
+[2026-09-19 18:46:18,298] WARNING django.request Unauthorized: /api/users/login/
+[2026-09-19 18:46:19,803] WARNING django.request Unauthorized: /api/users/token/refresh/
+[2026-09-19 18:46:23,317] WARNING django.request Bad Request: /api/listings/
+[2026-09-19 18:46:27,287] WARNING django.request Forbidden: /api/listings/d72dff49-845e-4ae5-8e35-99d5799a1753/
+[2026-09-19 18:46:30,303] WARNING django.request Unauthorized: /api/listings/
+[2026-09-19 18:46:31,304] WARNING django.request Forbidden: /api/listings/0284b0ae-1d69-4f1f-b76b-2ab665103efb/
+[2026-09-19 18:46:32,305] WARNING django.request Forbidden: /api/listings/eafec74b-91f7-4102-9442-8f301a859a2b/
+[2026-09-19 18:46:37,815] WARNING django.request Bad Request: /api/reservations/
+[2026-09-19 18:46:39,306] WARNING django.request Not Found: /api/reservations/a593b2af-b084-4555-8371-015a93a9e0a5/
+[2026-09-19 18:46:40,816] WARNING django.request Bad Request: /api/reservations/
+[2026-09-19 18:46:41,806] WARNING django.request Bad Request: /api/listings/
+[2026-09-19 18:46:45,799] WARNING django.request Forbidden: /api/listings/a29a11c8-50af-4c98-9f9f-0eeab7341bc2/
+[2026-09-19 18:46:49,812] WARNING django.request Bad Request: /api/users/change-password/
+[2026-09-19 18:46:50,814] WARNING django.request Unauthorized: /api/users/profile/
+[2026-09-19 19:06:49,335] WARNING django.request Not Found: /favicon.ico
+[2026-09-19 19:08:15,239] WARNING django.request Unauthorized: /api/users/profile/
+[2026-09-19 19:13:24,529] WARNING django.request Unauthorized: /api/users/login/
+[2026-09-19 19:14:03,486] WARNING django.request Unauthorized: /api/users/login/
+[2026-09-19 19:25:42,134] WARNING django.request Bad Request: /api/listings/
+[2026-09-19 19:25:48,874] WARNING django.request Forbidden: /api/listings/5dcbbe6e-9b5f-4b67-8eee-077346dfac78/
+[2026-09-19 19:29:23,040] WARNING django.request Bad Request: /api/listings/
+[2026-09-19 19:29:30,809] WARNING django.request Forbidden: /api/listings/ff0907e9-9bd7-4b00-88ee-f8256188aa3c/
+[2026-09-19 19:34:29,524] ERROR django.request Server Error (500): /api/reservations/
+Traceback (most recent call last):
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database table is locked: listings_apartment
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\drf_spectacular\drainage.py", line 207, in wrapped_method
+    return method(self, request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\rest_framework\generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\apps\reservations\controllers\reservation_controllers.py", line 62, in create
+    Apartment.objects.select_for_update().get(pk=listing_id)
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\query.py", line 679, in get
+    num = len(clone)
+          ^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\query.py", line 416, in __len__
+    self._fetch_all()
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\query.py", line 2239, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\query.py", line 98, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1624, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\utils.py", line 94, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database table is locked: listings_apartment
+[2026-09-19 19:34:29,524] ERROR django.request Server Error (500): /api/reservations/
+Traceback (most recent call last):
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: database table is locked: listings_apartment
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\rest_framework\views.py", line 523, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\drf_spectacular\drainage.py", line 207, in wrapped_method
+    return method(self, request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\rest_framework\generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\apps\reservations\controllers\reservation_controllers.py", line 62, in create
+    Apartment.objects.select_for_update().get(pk=listing_id)
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\query.py", line 679, in get
+    num = len(clone)
+          ^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\query.py", line 416, in __len__
+    self._fetch_all()
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\query.py", line 2239, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\query.py", line 98, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1624, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\utils.py", line 94, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\P2\my_Rentify_project\.venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: database table is locked: listings_apartment
+[2026-09-19 19:34:34,070] WARNING django.request Bad Request: /api/reservations/
+[2026-09-19 19:34:36,243] WARNING django.request Not Found: /api/reservations/5acf8fe1-9cd9-4c0a-bb2c-b8c6d7b1ddee/
+[2026-09-19 19:34:38,398] WARNING django.request Bad Request: /api/reservations/

@@ -129,7 +129,7 @@ class ListingDetailController(generics.RetrieveUpdateDestroyAPIView):
                 user=request.user if request.user.is_authenticated else None,
                                     listing=listing,)
 
-        Apartment.objects.filter(pk=listing.pk).update(iews_count=F("views_count") + 1)
+        Apartment.objects.filter(pk=listing.pk).update(views_count=F("views_count") + 1)
 
         listing.refresh_from_db(fields=["views_count"])
         serializer = self.get_serializer(listing)

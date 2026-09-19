@@ -140,3 +140,10 @@ class LogoutSerializer(serializers.Serializer):
             token.blacklist()
         except TokenError:
             raise serializers.ValidationError({"refresh": "Invalid or expired token."})
+
+
+class BecomeHostSerializer(serializers.Serializer):
+    """
+    Serializer for changing the authenticated user's role group.
+    """
+    role = serializers.ChoiceField(choices=("HOST", "BOTH"),required=True,)

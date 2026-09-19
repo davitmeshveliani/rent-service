@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = Env()
 Env.read_env(BASE_DIR / '.env')
 
-SECRET_KEY = env.str('SECRET_KEY', 'unsafe-default-secret-key')
+SECRET_KEY = env.str('SECRET_KEY')
 
 
 DEBUG = env.bool("DEBUG", False)

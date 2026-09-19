@@ -10,7 +10,7 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 from apps.core.models import UUIDAbstractModel
 from apps.listings.models import Apartment
-
+from apps.core.managers import ReviewManager
 
 class Review(UUIDAbstractModel):
     """
@@ -18,7 +18,7 @@ class Review(UUIDAbstractModel):
     Enforces domain business rules within clean().
     """
 
-    objects = models.Manager()
+    objects = ReviewManager()
 
     listing = models.ForeignKey(Apartment,on_delete=models.CASCADE,related_name="reviews",)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name="reviews",)

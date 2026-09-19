@@ -46,13 +46,9 @@ class User(AbstractUser):
 
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(
-                    gender__in=GenderChoices.values),
-                name="user_valid_gender",),
-            models.CheckConstraint(
-                condition=(
-                    models.Q(birthday__isnull=True) | models.Q(birthday__lte=timezone.now().date())),
-                                                    name="user_valid_birthday",)]
+                condition=models.Q(gender__in=GenderChoices.values),
+                                    name="user_valid_gender",),
+                                        ]
 
     def clean(self) -> None:
         super().clean()
@@ -62,28 +58,40 @@ class User(AbstractUser):
             self.email = self.email.strip().lower()
             qs = User.objects.filter(email__iexact=self.email)
             pk = getattr(self, "pk", None)
+
             if pk:
                 qs = qs.exclude(pk=pk)
 
             if qs.exists():
-                raise ValidationError(
-                    {"email": "A user with this email address already exists."})
+                raise ValidationError({"email": "A user with this email address already exists."})
 
-        # 2. Birthday and minimum age validation (18+ years old)
+        # 2. Birthday validation
         if self.birthday:
             today = timezone.localdate()
+
+            # Birthday cannot be in the future.
             if self.birthday > today:
-                raise ValidationError(
-                    {"birthday": "Birthday cannot be in the future."})
+                raise ValidationError({"birthday": "Birthday cannot be in the future."})
+
+            # User must be at least 18 years old.
 
             try:
-                min_age_date = self.birthday.replace(year=self.birthday.year + 18)
+                min_age_date = self.birthday.replace(
+                    year=self.birthday.year + 18)
             except ValueError:
-                min_age_date = self.birthday.replace(year=self.birthday.year + 18, day=28)
+                min_age_date = self.birthday.replace(year=self.birthday.year + 18,day=28)
 
             if min_age_date > today:
-                raise ValidationError(
-                    {"birthday": "Users must be at least 18 years old to register."})
+                raise ValidationError({"birthday": "Users must be at least 18 years old to register."})
+
+            # User cannot be older than 110 years.
+            try:
+                max_age_date = today.replace(year=today.year - 110)
+            except ValueError:
+                max_age_date = today.replace(year=today.year - 110,day=28)
+
+            if self.birthday < max_age_date:
+                raise ValidationError({"birthday": "Users cannot be older than 110 years."})
 
     def __str__(self) -> str:
         if self.first_name and self.last_name:

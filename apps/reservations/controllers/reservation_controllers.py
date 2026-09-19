@@ -4,6 +4,7 @@ API controllers for handling reservation listings, creation, updates, and cancel
 
 from typing import Any
 
+from django.db import transaction
 from django.db.models import Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status
@@ -12,6 +13,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
+from apps.listings.models import Apartment
 from apps.reservations.models import Reservation
 from apps.reservations.services.reservation_service import ReservationService
 from apps.reservations.controllers.reservation_schema import (
@@ -50,10 +52,19 @@ class ReservationListCreateAPIView(BaseReservationAPIView, generics.ListCreateAP
             return Reservation.objects.none()  # type: ignore[attr-defined]
 
         return (super().get_queryset().filter(Q(user=self.request.user)
-                            | Q(listing__user=self.request.user)).distinct())
+                                    | Q(listing__user=self.request.user)
+                                            ).distinct())
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        listing_id = request.data.get("listing")
+
+        with transaction.atomic():
+            Apartment.objects.select_for_update().get(pk=listing_id)
+            return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer: BaseSerializer) -> None:
         serializer.save(user=self.request.user)
+
 
 
 @extend_schema_view(get=my_reservations_schema,)
