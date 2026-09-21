@@ -51,11 +51,22 @@ class Reservation(UUIDAbstractModel):
         if not self.start_date or not self.end_date:
             return
 
+        # Check-in must always be at 12:00
+
+        start_local = timezone.localtime(self.start_date)
+        if start_local.hour != 12 or start_local.minute != 0:
+            raise ValidationError({"start_date": "Check-in time must be 12:00."})
+
+        # Check-out must always be at 12:00
+
+        end_local = timezone.localtime(self.end_date)
+        if end_local.hour != 12 or end_local.minute != 0:
+            raise ValidationError({"end_date": "Check-out time must be 12:00."})
+
         # 2. end_date
 
         if self.end_date <= self.start_date:
             raise ValidationError({"end_date": "End date must be strictly after start date."})
-
 
         # year + 1
         if self._state.adding and self.start_date < timezone.now():
