@@ -56,6 +56,9 @@ class ReservationSerializer(serializers.ModelSerializer):
         except DjangoValidationError as e:
             raise serializers.ValidationError(e.message_dict)
 
+        attrs["start_date"] = instance.start_date
+        attrs["end_date"] = instance.end_date
+
         return attrs
 
 

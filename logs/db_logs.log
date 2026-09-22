@@ -4844,3 +4844,8 @@
 [2026-09-19 20:16:19,402] DEBUG django.db.backends (0.000) SELECT "django_migrations"."id", "django_migrations"."app", "django_migrations"."name", "django_migrations"."applied" FROM "django_migrations"; args=(); alias=default
 [2026-09-19 20:16:25,189] DEBUG django.db.backends (0.000) SELECT "users"."password", "users"."last_login", "users"."is_superuser", "users"."username", "users"."is_staff", "users"."is_active", "users"."date_joined", "users"."id", "users"."email", "users"."first_name", "users"."last_name", "users"."phone_number", "users"."address", "users"."birthday", "users"."bio", "users"."gender" FROM "users" WHERE "users"."id" = 'c46f3d87b5fb47c498d895a634bf2b4f' LIMIT 21; args=('c46f3d87b5fb47c498d895a634bf2b4f',); alias=default
 [2026-09-19 20:16:25,305] DEBUG django.db.backends (0.000) SELECT "users"."password", "users"."last_login", "users"."is_superuser", "users"."username", "users"."is_staff", "users"."is_active", "users"."date_joined", "users"."id", "users"."email", "users"."first_name", "users"."last_name", "users"."phone_number", "users"."address", "users"."birthday", "users"."bio", "users"."gender" FROM "users" WHERE "users"."id" = 'c46f3d87b5fb47c498d895a634bf2b4f' LIMIT 21; args=('c46f3d87b5fb47c498d895a634bf2b4f',); alias=default
+[2026-09-22 11:03:22,787] DEBUG django.db.backends (0.000) 
+            SELECT name, type FROM sqlite_master
+            WHERE type in ('table', 'view') AND NOT name='sqlite_sequence'
+            ORDER BY name; args=None; alias=default
+[2026-09-22 11:03:22,787] DEBUG django.db.backends (0.000) SELECT "django_migrations"."id", "django_migrations"."app", "django_migrations"."name", "django_migrations"."applied" FROM "django_migrations"; args=(); alias=default

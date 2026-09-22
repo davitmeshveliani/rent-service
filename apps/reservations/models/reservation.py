@@ -51,57 +51,69 @@ class Reservation(UUIDAbstractModel):
         if not self.start_date or not self.end_date:
             return
 
-        # Check-in must always be at 12:00
+# Check-in  -> 14:00
+# Check-out -> 12:00
 
         start_local = timezone.localtime(self.start_date)
-        if start_local.hour != 12 or start_local.minute != 0:
-            raise ValidationError({"start_date": "Check-in time must be 12:00."})
-
-        # Check-out must always be at 12:00
-
         end_local = timezone.localtime(self.end_date)
-        if end_local.hour != 12 or end_local.minute != 0:
-            raise ValidationError({"end_date": "Check-out time must be 12:00."})
 
-        # 2. end_date
+        start_local = start_local.replace(hour=14, minute=0, second=0, microsecond=0, )
+        end_local = end_local.replace(hour=12, minute=0, second=0, microsecond=0, )
+
+        self.start_date = start_local
+        self.end_date = end_local
+
+# End date must be strictly after start date
 
         if self.end_date <= self.start_date:
-            raise ValidationError({"end_date": "End date must be strictly after start date."})
+            raise ValidationError(
+                {"end_date":
+                     ("End date must be strictly after start date.")})
 
-        # year + 1
+# Reservation cannot start in the past
+
         if self._state.adding and self.start_date < timezone.now():
             raise ValidationError(
-                {"start_date": "Reservation start date cannot be in the past."})
+                {"start_date": (
+                    "Reservation start date cannot be in the past.")})
+
+        # Reservation cannot be made more than one year in advance
 
         max_start_date = timezone.now() + relativedelta(years=1)
 
         if self._state.adding and self.start_date > max_start_date:
             raise ValidationError(
-                {"start_date": "Reservation cannot be made more than one year in advance."})
+                {"start_date": ("Reservation cannot be made more than one year "
+                                "in advance.")})
 
-        # 4. Guard Clause:
+# Guard clause for overlap validation
 
         listing_id = getattr(self, "listing_id", None)
-        active_statuses = {self.StatusChoice.PENDING, self.StatusChoice.CONFIRMED}
 
-        if not listing_id or self.is_deleted or self.status not in active_statuses:
+        active_statuses = {
+            self.StatusChoice.PENDING,
+            self.StatusChoice.CONFIRMED, }
+
+        if (not listing_id or self.is_deleted or self.status not in active_statuses):
             return
 
-        # 5. Overlapping
+# Overlapping reservations
 
-        overlapping_qs = Reservation.objects.filter(
-                                    listing_id=listing_id,
-                                    is_deleted=False,
-                                    status__in=active_statuses,
-                                    start_date__lt=self.end_date,
-                                    end_date__gt=self.start_date,)
+        overlapping_qs = Reservation.objects.filter(listing_id=listing_id, is_deleted=False,
+                                                    status__in=active_statuses, start_date__lt=self.end_date
+                                                    , end_date__gt=self.start_date, )
 
         if self.pk:
-            overlapping_qs = overlapping_qs.exclude(pk=self.pk)
+            overlapping_qs = overlapping_qs.exclude(
+                pk=self.pk)
 
         if overlapping_qs.exists():
-            raise ValidationError({"start_date": "This apartment is already reserved for the selected date range."})
+            raise ValidationError(
+                {"start_date": ("This apartment is already reserved for "
+                                "the selected date range.")})
 
     def __str__(self) -> str:
-        user_identifier: str = getattr(self.user, "username", str(self.user))
-        return f"Reservation {self.id} - {user_identifier} ({self.status})"
+        user_identifier: str = getattr(self.user, "username", str(self.user), )
+
+        return (f"Reservation {self.id} - "
+                f"{user_identifier} ({self.status})")
